@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>MintBot Dashboard</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#030712;color:#E5E7EB;font-family:'Inter','Segoe UI',sans-serif;min-height:100vh}
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:#0D1117}
+::-webkit-scrollbar-thumb{background:#374151;border-radius:4px}
+.shell{display:flex;height:100vh;overflow:hidden}
+.sidebar{width:220px;background:#0D1117;border-right:1px solid #1F2937;display:flex;flex-direction:column;flex-shrink:0;overflow-y:auto}
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.topbar{background:#0D1117;border-bottom:1px solid #1F2937;padding:12px 20px;display:flex;align-items:center;gap:10px;flex-shrink:0}
+.content{flex:1;overflow-y:auto;padding:22px}
+.sb-logo{padding:18px 16px 14px;border-bottom:1px solid #1F2937}
+.sb-logo-title{font-weight:800;font-size:16px;letter-spacing:-.5px}
+.sb-logo-sub{color:#4B5563;font-size:11px;margin-top:2px}
+.sb-badge{display:inline-block;background:#6366F133;color:#818CF8;border-radius:4px;font-size:10px;font-weight:700;padding:1px 6px;margin-left:6px}
+.sb-section{padding:12px 10px 4px;font-size:10px;font-weight:700;color:#4B5563;letter-spacing:1.5px;text-transform:uppercase}
+.sb-item{display:flex;align-items:center;gap:10px;padding:9px 14px;border-radius:8px;margin:2px 8px;cursor:pointer;font-size:13px;color:#6B7280;transition:all .15s;border:none;background:none;width:calc(100% - 16px);text-align:left}
+.sb-item:hover{background:#1F2937;color:#E5E7EB}
+.sb-item.active{background:#6366F122;color:#818CF8;font-weight:600}
+.sb-bottom{margin-top:auto;padding:12px;border-top:1px solid #1F2937}
+.server-inp{font-family:monospace;font-size:12px;background:#111827;border:1px solid #1F2937;border-radius:6px;padding:7px 12px;flex:1;outline:none;color:#A5B4FC}
+.key-inp{font-family:monospace;font-size:12px;background:#111827;border:1px solid #1F2937;border-radius:6px;padding:7px 12px;width:190px;outline:none;color:#E5E7EB}
+.card{background:#111827;border:1px solid #1F2937;border-radius:12px;padding:20px 22px;margin-bottom:16px}
+.card-title{font-weight:700;font-size:14px;color:#E5E7EB;margin-bottom:14px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+@media(max-width:700px){.grid2,.grid3,.grid4{grid-template-columns:1fr}.sidebar{display:none}}
+.stat{background:#0D1117;border:1px solid #1F2937;border-radius:10px;padding:16px;text-align:center}
+.stat-val{font-size:28px;font-weight:800;color:#6366F1;font-variant-numeric:tabular-nums}
+.stat-label{font-size:12px;color:#E5E7EB;font-weight:600;margin-top:4px}
+.stat-sub{font-size:11px;color:#4B5563;margin-top:2px}
+.field{display:flex;flex-direction:column;gap:6px;margin-bottom:14px}
+.field label{font-size:12px;font-weight:600;color:#9CA3AF;letter-spacing:.4px}
+.field input,.field select,.field textarea{background:#0D1117;border:1px solid #1F2937;border-radius:8px;color:#E5E7EB;padding:10px 14px;font-size:13px;outline:none;width:100%;transition:border .15s;font-family:inherit}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:#6366F1}
+.field textarea{resize:vertical;min-height:90px;font-family:monospace}
+.field select{cursor:pointer}
+.btn{border:none;border-radius:8px;padding:9px 16px;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;display:inline-flex;align-items:center;gap:6px;font-family:inherit}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn-primary{background:#6366F1;color:#fff}.btn-primary:hover:not(:disabled){background:#4F46E5}
+.btn-success{background:#059669;color:#fff}.btn-success:hover:not(:disabled){background:#047857}
+.btn-danger{background:#DC2626;color:#fff}.btn-danger:hover:not(:disabled){background:#B91C1C}
+.btn-ghost{background:#1F2937;color:#9CA3AF}.btn-ghost:hover:not(:disabled){background:#374151;color:#E5E7EB}
+.btn-warning{background:#D97706;color:#fff}.btn-warning:hover:not(:disabled){background:#B45309}
+.btn-sm{padding:5px 11px;font-size:12px;border-radius:6px}
+.row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.spacer{flex:1}
+.badge{display:inline-flex;align-items:center;gap:5px;border-radius:20px;padding:2px 9px;font-size:10px;font-weight:700;letter-spacing:.8px;text-transform:uppercase}
+.dot{width:6px;height:6px;border-radius:50%}
+.b-idle{background:#6B728022;color:#9CA3AF;border:1px solid #6B728033}.b-idle .dot{background:#6B7280}
+.b-running{background:#10B98122;color:#10B981;border:1px solid #10B98133}.b-running .dot{background:#10B981;animation:pulse 1s infinite}
+.b-done{background:#6366F122;color:#818CF8;border:1px solid #6366F133}.b-done .dot{background:#6366F1}
+.b-failed{background:#EF444422;color:#F87171;border:1px solid #EF444433}.b-failed .dot{background:#EF4444}
+.b-scheduled{background:#F59E0B22;color:#FBBF24;border:1px solid #F59E0B33}.b-scheduled .dot{background:#F59E0B;animation:pulse 1s infinite}
+.b-cancelled{background:#37415122;color:#6B7280;border:1px solid #37415133}.b-cancelled .dot{background:#374151}
+.b-ok{background:#10B98122;color:#10B981;border:1px solid #10B98133}.b-ok .dot{background:#10B981}
+.b-pending{background:#F59E0B22;color:#FBBF24;border:1px solid #F59E0B33}.b-pending .dot{background:#F59E0B}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.tog{width:42px;height:22px;border-radius:11px;position:relative;cursor:pointer;transition:background .2s;flex-shrink:0}
+.tog-k{position:absolute;top:3px;width:16px;height:16px;border-radius:50%;background:#fff;transition:left .2s}
+.health-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid #0D1117}
+.health-row:last-child{border-bottom:none}
+.list-row{background:#0D1117;border:1px solid #1F2937;border-radius:8px;padding:13px 16px;margin-bottom:8px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.list-row:last-child{margin-bottom:0}
+.log-line{font-family:monospace;font-size:12px;padding:4px 0;border-bottom:1px solid #0D111799;line-height:1.5}
+.log-time{color:#374151;margin-right:8px}
+.l-info{color:#6B7280}.l-success{color:#34D399}.l-error{color:#F87171}.l-warn{color:#FBBF24}.l-tx{color:#A5B4FC}
+.info-box{background:#0D1117;border:1px solid #374151;border-radius:8px;padding:11px 14px;font-size:12px;color:#6B7280;line-height:1.6}
+.info-box.warn{border-color:#D9770644;background:#D9770610;color:#FCD34D}
+.div{height:1px;background:#1F2937;margin:12px 0}
+.mono{font-family:monospace}
+.tag{display:inline-block;background:#1F2937;color:#9CA3AF;border-radius:4px;font-size:11px;padding:2px 7px}
+.modal-bg{position:fixed;inset:0;background:#00000099;z-index:200;display:flex;align-items:center;justify-content:center;padding:20px}
+.modal{background:#111827;border:1px solid #1F2937;border-radius:14px;padding:24px;width:100%;max-width:520px;max-height:90vh;overflow-y:auto}
+.modal-title{font-weight:700;font-size:16px;margin-bottom:18px}
+</style>
+</head>
+<body>
+<div class="shell">
+<div class="sidebar">
+  <div class="sb-logo">
+    <div class="sb-logo-title">⚡ <span style="color:#6366F1">Mint</span>Bot <span class="sb-badge">PRO</span></div>
+    <div class="sb-logo-sub">Server-side · Always-on</div>
+  </div>
+  <div style="padding:8px 0">
+    <div class="sb-section">Workspace</div>
+    <button class="sb-item active" id="nav-overview" onclick="nav('overview')"><span>📊</span>Overview</button>
+    <button class="sb-item" id="nav-drops" onclick="nav('drops')"><span>💧</span>Drops</button>
+    <button class="sb-item" id="nav-tasks" onclick="nav('tasks')"><span>⚙️</span>Tasks</button>
+    <button class="sb-item" id="nav-warroom" onclick="nav('warroom')"><span>🎯</span>War Room</button>
+    <button class="sb-item" id="nav-wallets" onclick="nav('wallets')"><span>👛</span>Wallets</button>
+    <div class="sb-section">Analytics</div>
+    <button class="sb-item" id="nav-pnl" onclick="nav('pnl')"><span>💰</span>PnL</button>
+    <button class="sb-item" id="nav-runs" onclick="nav('runs')"><span>▶</span>Run History</button>
+    <button class="sb-item" id="nav-logs" onclick="nav('logs')"><span>📋</span>Logs</button>
+    <div class="sb-section">Config</div>
+    <button class="sb-item" id="nav-settings" onclick="nav('settings')"><span>⚙</span>Settings</button>
+  </div>
+  <div class="sb-bottom"><div id="sb-health" style="font-size:11px;color:#4B5563">⚪ Not connected</div></div>
+</div>
+<div class="main">
+  <div class="topbar">
+    <span style="font-size:12px;color:#6B7280;white-space:nowrap">Server:</span>
+    <input class="server-inp" id="serverUrl" value="http://localhost:3001" placeholder="https://your-app.railway.app"/>
+    <input class="key-inp" id="apiKey" type="password" placeholder="API Secret Key"/>
+    <button class="btn btn-primary btn-sm" onclick="connect()">Connect</button>
+    <span id="connStatus" style="font-size:12px;color:#4B5563;white-space:nowrap">—</span>
+  </div>
+  <div class="content" id="content">
+    <div style="text-align:center;padding:80px 20px;color:#4B5563">
+      <div style="font-size:40px;margin-bottom:16px">⚡</div>
+      <div style="font-size:16px;font-weight:600;color:#6B7280">Enter your server URL and API key to connect</div>
+      <div style="font-size:13px;margin-top:8px">Deploy the backend to Railway or Render first, then paste the URL here</div>
+    </div>
+  </div>
+</div>
+</div>
+<div id="mc"></div>
+<script>
+let S={page:"overview",serverUrl:localStorage.getItem("mb_url")||"http://localhost:3001",apiKey:localStorage.getItem("mb_key")||"",connected:false,overview:null,drops:[],tasks:[],wallets:[],runs:[],logs:[],pnl:null,countdownTimers:{},autoRefresh:null};
+document.getElementById("serverUrl").value=S.serverUrl;
+document.getElementById("apiKey").value=S.apiKey;
+
+async function api(method,path,body){
+  const url=S.serverUrl.replace(/\/$/,"")+path;
+  const res=await fetch(url,{method,headers:{"Content-Type":"application/json","x-api-key":S.apiKey},body:body?JSON.stringify(body):undefined});
+  if(!res.ok){const e=await res.json().catch(()=>({}));throw new Error(e.error||`HTTP ${res.status}`);}
+  return res.json();
+}
+const GET=p=>api("GET",p);
+const POST=(p,b)=>api("POST",p,b);
+const PUT=(p,b)=>api("PUT",p,b);
+const PATCH=(p,b)=>api("PATCH",p,b);
+const DEL=p=>api("DELETE",p);
+
+async function connect(){
+  S.serverUrl=document.getElementById("serverUrl").value.trim();
+  S.apiKey=document.getElementById("apiKey").value.trim();
+  localStorage.setItem("mb_url",S.serverUrl);
+  localStorage.setItem("mb_key",S.apiKey);
+  try{
+    document.getElementById("connStatus").textContent="Connecting…";
+    const h=await GET("/health");
+    S.connected=true;
+    document.getElementById("connStatus").innerHTML=`<span style="color:#10B981">✅ Connected · uptime ${h.uptime}s</span>`;
+    document.getElementById("sb-health").innerHTML=`<span style="color:#10B981">🟢 Online · ${h.wallets}w ${h.drops}d</span>`;
+    await loadAll();nav(S.page);startAutoRefresh();
+  }catch(e){
+    S.connected=false;
+    document.getElementById("connStatus").innerHTML=`<span style="color:#F87171">❌ ${e.message}</span>`;
+    document.getElementById("sb-health").innerHTML=`<span style="color:#EF4444">🔴 ${e.message}</span>`;
+  }
+}
+
+async function loadAll(){
+  try{
+    [S.overview,S.drops,S.tasks,S.wallets,S.runs,S.logs]=await Promise.all([GET("/overview"),GET("/drops"),GET("/tasks"),GET("/wallets"),GET("/runs?limit=30"),GET("/logs?limit=100")]);
+    S.pnl=await GET("/pnl");
+  }catch(e){console.error(e);}
+}
+
+function startAutoRefresh(){
+  if(S.autoRefresh)clearInterval(S.autoRefresh);
+  S.autoRefresh=setInterval(async()=>{
+    if(!S.connected)return;
+    try{
+      S.overview=await GET("/overview");S.runs=await GET("/runs?limit=30");S.logs=await GET("/logs?limit=100");S.tasks=await GET("/tasks");
+      if(["overview","warroom","logs","tasks"].includes(S.page))render();
+    }catch(e){}
+  },10000);
+}
+
+function nav(page){
+  S.page=page;
+  document.querySelectorAll(".sb-item").forEach(el=>el.classList.remove("active"));
+  const btn=document.getElementById("nav-"+page);if(btn)btn.classList.add("active");
+  render();
+}
+
+function render(){
+  if(!S.connected)return;
+  const el=document.getElementById("content");
+  switch(S.page){
+    case"overview":el.innerHTML=renderOverview();startCountdowns();break;
+    case"drops":el.innerHTML=renderDrops();break;
+    case"tasks":el.innerHTML=renderTasks();startCountdowns();break;
+    case"warroom":el.innerHTML=renderWarRoom();break;
+    case"wallets":el.innerHTML=renderWallets();break;
+    case"pnl":el.innerHTML=renderPnL();break;
+    case"runs":el.innerHTML=renderRuns();break;
+    case"logs":el.innerHTML=renderLogs();break;
+    case"settings":el.innerHTML=renderSettings();break;
+  }
+}
+
+function badge(s){const m={idle:"idle",running:"running",done:"done",failed:"failed",scheduled:"scheduled",cancelled:"cancelled",ok:"ok",pending:"pending"};return`<span class="badge b-${m[s]||'idle'}"><span class="dot"></span>${s}</span>`;}
+function tog(val,fn){return`<div class="tog" style="background:${val?'#6366F1':'#374151'}" onclick="${fn}"><div class="tog-k" style="left:${val?'22px':'3px'}"></div></div>`;}
+function timeAgo(iso){const d=Date.now()-new Date(iso).getTime();if(d<60000)return`${Math.floor(d/1000)}s ago`;if(d<3600000)return`${Math.floor(d/60000)}m ago`;return`${Math.floor(d/3600000)}h ago`;}
+function cntdown(iso){if(!iso)return"—";const ms=new Date(iso).getTime()-Date.now();if(ms<=0)return"Now";const h=Math.floor(ms/3600000),m=Math.floor((ms%3600000)/60000),s=Math.floor((ms%60000)/1000);return`${h}h ${m}m ${s}s`;}
+function startCountdowns(){Object.values(S.countdownTimers).forEach(clearInterval);S.countdownTimers={};document.querySelectorAll("[data-cd]").forEach(el=>{const iso=el.dataset.cd;S.countdownTimers[iso]=setInterval(()=>{el.textContent=cntdown(iso);},1000);});}
+function getDropName(id){return S.drops.find(d=>d.id===id)?.name||"—";}
+
+function renderOverview(){
+  const ov=S.overview||{},sh=ov.systemHealth||{};
+  const upcoming=(ov.upcomingTasks||[]).map(t=>`<div class="list-row"><div style="flex:1"><div style="font-weight:600;font-size:13px">${t.name}</div><div style="font-size:12px;color:#6B7280">${getDropName(t.dropId)}</div></div><div style="text-align:right">${badge("scheduled")}<div style="font-size:12px;color:#FBBF24;margin-top:4px" data-cd="${t.scheduledAt}">${cntdown(t.scheduledAt)}</div></div></div>`).join("")||`<div style="color:#4B5563;font-size:13px">No upcoming tasks.</div>`;
+  const recent=(ov.recentRuns||[]).map(r=>`<div class="list-row"><div style="flex:1"><div style="font-weight:600;font-size:13px">${r.dropName||"Run"}</div><div style="font-size:12px;color:#6B7280">${r.startedAt?timeAgo(r.startedAt):"—"}</div></div>${badge(r.status)}<span style="font-size:12px;color:#6B7280">${(r.results||[]).filter(x=>x.success).length}/${(r.results||[]).length} mints</span></div>`).join("")||`<div style="color:#4B5563;font-size:13px">No runs yet.</div>`;
+  return`<div class="grid4" style="margin-bottom:16px">
+    <div class="stat"><div class="stat-val">${ov.wallets||0}</div><div class="stat-label">Wallets</div><div class="stat-sub">${ov.activeWallets||0} active</div></div>
+    <div class="stat"><div class="stat-val">${ov.drops||0}</div><div class="stat-label">Drops</div><div class="stat-sub">saved configs</div></div>
+    <div class="stat"><div class="stat-val">${ov.scheduledTasks||0}</div><div class="stat-label">Scheduled</div><div class="stat-sub">tasks queued</div></div>
+    <div class="stat"><div class="stat-val">${ov.totalMints||0}</div><div class="stat-label">Total Mints</div><div class="stat-sub">${ov.successfulRuns||0} successful runs</div></div>
+  </div>
+  <div class="grid2">
+    <div class="card"><div class="card-title">⚡ System Health</div>
+      <div class="health-row"><span style="color:#E5E7EB;font-size:13px">🖥 Server</span>${badge(sh.server||"ok")}</div>
+      <div class="health-row"><span style="color:#E5E7EB;font-size:13px">⚙ Mint Worker</span>${badge(sh.mintWorker||"ok")}</div>
+      <div class="health-row"><span style="color:#E5E7EB;font-size:13px">⏱ Uptime</span><span style="color:#6B7280;font-size:12px">${sh.uptime||0}s</span></div>
+      <div style="color:#4B5563;font-size:11px;margin-top:10px">Auto-refreshes every 10s</div>
+    </div>
+    <div class="card"><div class="card-title">⏰ Upcoming Tasks</div>${upcoming}</div>
+  </div>
+  <div class="card"><div class="card-title">Recent Runs</div>${recent}</div>`;
+}
+
+function renderDrops(){
+  const rows=S.drops.map(d=>`<div class="list-row"><div style="flex:1;min-width:0"><div style="font-weight:600;font-size:13px">${d.name}</div><div style="font-size:12px;color:#6B7280;margin-top:3px">${d.contractAddress?.slice(0,12)||'no address'}… · ${d.chain?.toUpperCase()} · ${d.mintPrice} ETH · fn: ${d.mintFunctionSig}</div></div><div class="row"><span class="tag">${d.chain}</span><button class="btn btn-success btn-sm" onclick="quickFire('${d.id}')">🚀 Fire</button><button class="btn btn-primary btn-sm" onclick="openCreateTask('${d.id}')">+ Task</button><button class="btn btn-ghost btn-sm" onclick="openEditDrop('${d.id}')">Edit</button><button class="btn btn-danger btn-sm" onclick="delDrop('${d.id}')">✕</button></div></div>`).join("")||`<div style="color:#4B5563;font-size:13px">No drops yet.</div>`;
+  return`<div class="row" style="margin-bottom:16px"><div style="font-size:18px;font-weight:700">💧 Drops</div><div class="spacer"></div><button class="btn btn-primary" onclick="openCreateDrop()">+ New Drop</button></div>
+  <div class="card"><div style="color:#6B7280;font-size:12px;margin-bottom:14px">A Drop is a saved mint config. Fire immediately or create a scheduled Task from it.</div>${rows}</div>`;
+}
+
+function renderTasks(){
+  const rows=S.tasks.map(t=>`<div class="list-row"><div style="flex:1;min-width:0"><div style="font-weight:600;font-size:13px">${t.name}</div><div style="font-size:12px;color:#6B7280;margin-top:2px">Drop: ${getDropName(t.dropId)} · ${timeAgo(t.createdAt)}</div>${t.scheduledAt?`<div style="font-size:12px;color:#FBBF24;margin-top:2px" data-cd="${t.scheduledAt}">⏰ ${cntdown(t.scheduledAt)}</div>`:''}</div><div class="row">${badge(t.status)}${(t.status==="pending"||t.status==="failed")?`<button class="btn btn-success btn-sm" onclick="fireTask('${t.id}')">▶ Fire</button>`:''} ${t.status==="scheduled"?`<button class="btn btn-warning btn-sm" onclick="cancelTask('${t.id}')">Cancel</button>`:''} ${t.runId?`<button class="btn btn-ghost btn-sm" onclick="viewRun('${t.runId}')">Run</button>`:''}</div></div>`).join("")||`<div style="color:#4B5563;font-size:13px">No tasks yet.</div>`;
+  return`<div class="row" style="margin-bottom:16px"><div style="font-size:18px;font-weight:700">⚙ Tasks</div><div class="spacer"></div><button class="btn btn-primary" onclick="openCreateTask()">+ New Task</button></div>
+  <div class="card"><div class="info-box warn" style="margin-bottom:14px">⚡ Tasks fire on the server — browser can be closed, mints still execute.</div>${rows}</div>`;
+}
+
+function renderWarRoom(){
+  const active=S.runs.filter(r=>r.status==="running");
+  const logLines=S.logs.slice(0,80).map(l=>`<div class="log-line"><span class="log-time">[${new Date(l.time).toLocaleTimeString()}]</span><span class="l-${l.type||'info'}">${l.msg}</span></div>`).join("")||`<div style="color:#4B5563;font-size:13px">No activity.</div>`;
+  const activeHtml=active.length?active.map(r=>`<div class="card" style="border-color:#10B98133"><div class="row"><b>${r.dropName}</b>${badge("running")}</div><div style="font-size:12px;color:#6B7280;margin-top:6px">Started ${timeAgo(r.startedAt)}</div><div style="margin-top:10px">${(r.logs||[]).slice(0,5).map(l=>`<div class="log-line"><span class="log-time">[${new Date(l.time).toLocaleTimeString()}]</span><span class="l-${l.type}">${l.msg}</span></div>`).join("")}</div></div>`).join(""):undefined;
+  return`<div style="font-size:18px;font-weight:700;margin-bottom:16px">🎯 War Room <span style="font-size:12px;color:#6B7280;font-weight:400">· live view</span></div>
+  ${activeHtml||`<div class="card"><div style="color:#4B5563;font-size:13px">No active runs right now.</div></div>`}
+  <div class="card"><div class="row" style="margin-bottom:12px"><div class="card-title" style="margin-bottom:0">Live Logs</div><div class="spacer"></div><span style="font-size:11px;color:#4B5563">auto-refreshes every 10s</span></div><div style="max-height:420px;overflow-y:auto">${logLines}</div></div>`;
+}
+
+function renderWallets(){
+  const rows=S.wallets.map(w=>`<div class="list-row"><div style="display:flex;align-items:center;gap:10px;flex:1;min-width:0"><div style="width:8px;height:8px;border-radius:50%;background:${w.active?'#10B981':'#4B5563'};flex-shrink:0"></div><div><div style="font-weight:600;font-size:13px">${w.label}</div><div class="mono" style="font-size:12px;color:#6B7280">${w.address}</div></div></div><div class="row">${tog(w.active,`toggleWallet('${w.id}',${!w.active})`)}<button class="btn btn-ghost btn-sm" onclick="fetchBal('${w.id}')">💰</button><button class="btn btn-danger btn-sm" onclick="delWallet('${w.id}')">Remove</button></div></div>`).join("")||`<div style="color:#4B5563;font-size:13px">No wallets added.</div>`;
+  return`<div class="row" style="margin-bottom:16px"><div style="font-size:18px;font-weight:700">👛 Wallets</div><div class="spacer"></div><button class="btn btn-primary" onclick="openAddWallet()">+ Add Wallet</button></div>
+  <div class="card"><div class="info-box" style="margin-bottom:14px">🔒 Keys stored in server memory only, used solely to sign txs. Use dedicated minting wallets.</div>${rows}</div>`;
+}
+
+function renderPnL(){
+  const p=S.pnl||{};const bd=p.byDrop||{};
+  const dropRows=Object.entries(bd).map(([n,d])=>`<div class="list-row"><span style="flex:1;font-weight:600;font-size:13px">${n}</span><span style="color:#34D399">${d.mints} mints</span><span style="color:#F87171;margin-left:16px">~${parseFloat(d.spent).toFixed(5)} ETH</span></div>`).join("")||`<div style="color:#4B5563;font-size:13px">No data yet.</div>`;
+  return`<div style="font-size:18px;font-weight:700;margin-bottom:16px">💰 PnL</div>
+  <div class="grid2" style="margin-bottom:16px"><div class="stat"><div class="stat-val">${p.totalMints||0}</div><div class="stat-label">Total Mints</div></div><div class="stat"><div class="stat-val" style="color:#F87171">${parseFloat(p.totalSpent||0).toFixed(5)}</div><div class="stat-label">ETH Spent</div><div class="stat-sub">mint + gas estimate</div></div></div>
+  <div class="card"><div class="card-title">By Drop</div>${dropRows}</div>`;
+}
+
+function renderRuns(){
+  const rows=S.runs.map(r=>`<div class="list-row" style="flex-direction:column;align-items:flex-start;gap:8px"><div class="row" style="width:100%"><b style="flex:1">${r.dropName||"Run"}</b>${badge(r.status)}<span style="font-size:11px;color:#4B5563">${r.startedAt?timeAgo(r.startedAt):"—"}</span><button class="btn btn-ghost btn-sm" onclick="viewRun('${r.id}')">Details</button></div><div style="font-size:12px;color:#6B7280">${(r.results||[]).filter(x=>x.success).length}/${(r.results||[]).length} succeeded${r.finishedAt?" · done":""}</div></div>`).join("")||`<div style="color:#4B5563;font-size:13px">No runs yet.</div>`;
+  return`<div style="font-size:18px;font-weight:700;margin-bottom:16px">▶ Run History</div><div class="card">${rows}</div>`;
+}
+
+function renderLogs(){
+  const lines=S.logs.slice(0,200).map(l=>`<div class="log-line"><span class="log-time">[${new Date(l.time).toLocaleTimeString()}]</span><span class="l-${l.type||'info'}">${l.msg}</span></div>`).join("")||`<div style="color:#4B5563;font-size:13px">No logs.</div>`;
+  return`<div class="row" style="margin-bottom:16px"><div style="font-size:18px;font-weight:700">📋 Logs</div><div class="spacer"></div><button class="btn btn-ghost btn-sm" onclick="loadLogs()">↻ Refresh</button><button class="btn btn-ghost btn-sm" onclick="exportLogs()">⬇ Export</button></div><div class="card"><div style="max-height:600px;overflow-y:auto">${lines}</div></div>`;
+}
+
+function renderSettings(){
+  return`<div style="font-size:18px;font-weight:700;margin-bottom:16px">⚙ Settings</div>
+  <div class="card"><div class="card-title">Server Connection</div>
+    <div class="field"><label>Server URL (Railway / Render)</label><input id="s-url" value="${S.serverUrl}"/></div>
+    <div class="field"><label>API Secret Key</label><input id="s-key" type="password" value="${S.apiKey}"/></div>
+    <button class="btn btn-primary" onclick="saveSettings()">Save & Reconnect</button>
+  </div>
+  <div class="card"><div class="card-title">RPC Key (stored on server)</div>
+    <div class="info-box" style="margin-bottom:14px">Sent to your server and used for all chain calls. Get a free key from <b>Alchemy.com</b> or <b>Infura.io</b>.</div>
+    <div class="field"><label>Infura / Alchemy API Key</label><input id="s-rpc" type="password" placeholder="paste key here"/></div>
+    <button class="btn btn-primary" onclick="saveRpcKey()">Save to Server</button>
+  </div>
+  <div class="card"><div class="card-title">🚀 Deploy Guide</div>
+    <div class="info-box" style="line-height:2">
+      <b style="color:#E5E7EB">Railway (recommended):</b><br>
+      1. Push the <code>backend/</code> folder to GitHub<br>
+      2. railway.app → New Project → Deploy from GitHub<br>
+      3. Add env vars: <code>API_SECRET</code> = your secret, <code>PORT</code> = 3001<br>
+      4. Copy the Railway public URL → paste above<br><br>
+      <b style="color:#E5E7EB">Render (free tier):</b><br>
+      1. render.com → New Web Service → connect repo<br>
+      2. Build: <code>npm install</code> · Start: <code>node server.js</code><br>
+      3. Add <code>API_SECRET</code> env var → copy URL
+    </div>
+  </div>`;
+}
+
+// Modals
+function modal(html){document.getElementById("mc").innerHTML=`<div class="modal-bg" onclick="if(event.target===this)closeModal()"><div class="modal">${html}</div></div>`;}
+function closeModal(){document.getElementById("mc").innerHTML="";}
+
+function openAddWallet(){
+  modal(`<div class="modal-title">👛 Add Wallet</div>
+  <div class="field"><label>Label</label><input id="m-label" placeholder="Hot Wallet 1"/></div>
+  <div class="field"><label>Private Key</label><input id="m-pk" type="password" placeholder="0x…"/></div>
+  <div class="info-box" style="margin-bottom:14px">🔒 Stored in server memory only, never logged or persisted.</div>
+  <div class="row"><button class="btn btn-primary" onclick="addWallet()">Add</button><button class="btn btn-ghost" onclick="closeModal()">Cancel</button></div>`);
+}
+
+function openCreateDrop(){
+  modal(`<div class="modal-title">💧 New Drop</div>
+  <div class="field"><label>Name</label><input id="d-name" placeholder="CoolNFT Launch"/></div>
+  <div class="grid2"><div class="field"><label>Chain</label><select id="d-chain"><option value="eth">Ethereum</option><option value="base">Base</option><option value="polygon">Polygon</option><option value="bsc">BNB Chain</option><option value="arbitrum">Arbitrum</option><option value="zora">Zora</option></select></div>
+  <div class="field"><label>Contract Address</label><input id="d-addr" placeholder="0x…"/></div></div>
+  <div class="grid2"><div class="field"><label>Mint Function</label><input id="d-fn" value="mint(uint256)"/></div>
+  <div class="field"><label>Mint Price (ETH)</label><input id="d-price" value="0.08" type="number"/></div></div>
+  <div class="grid3"><div class="field"><label>Copies</label><input id="d-copies" value="1" type="number"/></div>
+  <div class="field"><label>Max Gas (Gwei)</label><input id="d-gas" value="100" type="number"/></div>
+  <div class="field"><label>Gas Limit</label><input id="d-limit" value="250000" type="number"/></div></div>
+  <div class="field"><label>Gas Strategy</label><select id="d-strat"><option value="auto">Auto</option><option value="aggressive">Aggressive +20%</option><option value="fixed">Fixed</option></select></div>
+  <div class="row"><button class="btn btn-primary" onclick="createDrop()">Create</button><button class="btn btn-ghost" onclick="closeModal()">Cancel</button></div>`);
+}
+
+function openCreateTask(preId){
+  if(!S.drops.length){alert("Create a Drop first!");return;}
+  const opts=S.drops.map(d=>`<option value="${d.id}" ${d.id===preId?'selected':''}>${d.name}</option>`).join("");
+  modal(`<div class="modal-title">⚙ New Task</div>
+  <div class="field"><label>Drop</label><select id="t-drop">${opts}</select></div>
+  <div class="field"><label>Task Name</label><input id="t-name" placeholder="Launch day mint"/></div>
+  <div class="field"><label>Schedule Time (blank = fire immediately)</label><input id="t-time" type="datetime-local"/></div>
+  <div class="info-box warn" style="margin-bottom:14px">⚡ Fires on server — browser can be closed.</div>
+  <div class="row"><button class="btn btn-primary" onclick="createTask()">Create</button><button class="btn btn-ghost" onclick="closeModal()">Cancel</button></div>`);
+}
+
+function openEditDrop(id){
+  const d=S.drops.find(x=>x.id===id);if(!d)return;
+  modal(`<div class="modal-title">✏ Edit — ${d.name}</div>
+  <div class="field"><label>Contract Address</label><input id="ed-addr" value="${d.contractAddress||''}"/></div>
+  <div class="grid2"><div class="field"><label>Mint Price</label><input id="ed-price" value="${d.mintPrice}" type="number"/></div>
+  <div class="field"><label>Copies</label><input id="ed-copies" value="${d.mintCopies}" type="number"/></div></div>
+  <div class="grid2"><div class="field"><label>Max Gas Gwei</label><input id="ed-gas" value="${d.maxGasGwei}" type="number"/></div>
+  <div class="field"><label>Gas Limit</label><input id="ed-limit" value="${d.gasLimit}" type="number"/></div></div>
+  <div class="row"><button class="btn btn-primary" onclick="saveDrop('${id}')">Save</button><button class="btn btn-ghost" onclick="closeModal()">Cancel</button></div>`);
+}
+
+async function viewRun(id){
+  try{
+    const run=await GET(`/runs/${id}`);
+    const res=(run.results||[]).map(r=>`<div class="list-row"><span style="flex:1;font-weight:600;font-size:13px">${r.wallet||r.address?.slice(0,10)||"wallet"}</span>${badge(r.success?"done":"failed")}${r.hash?`<span class="mono" style="font-size:11px;color:#A5B4FC">${r.hash.slice(0,18)}…</span>`:''}</div>`).join("")||"No results";
+    const logs=(run.logs||[]).slice(0,25).map(l=>`<div class="log-line"><span class="log-time">[${new Date(l.time).toLocaleTimeString()}]</span><span class="l-${l.type}">${l.msg}</span></div>`).join("")||"No logs";
+    modal(`<div class="modal-title">Run — ${run.dropName}</div>
+    <div class="row" style="margin-bottom:12px">${badge(run.status)}<span style="color:#6B7280;font-size:12px">${run.startedAt?new Date(run.startedAt).toLocaleString():''}</span></div>
+    <div style="font-weight:600;font-size:13px;margin-bottom:8px">Results</div>${res}
+    <div style="font-weight:600;font-size:13px;margin:14px 0 8px">Logs</div><div style="max-height:180px;overflow-y:auto">${logs}</div>
+    <div class="row" style="margin-top:14px"><button class="btn btn-ghost" onclick="closeModal()">Close</button></div>`);
+  }catch(e){alert(e.message);}
+}
+
+// Actions
+async function addWallet(){
+  const pk=document.getElementById("m-pk")?.value?.trim(),label=document.getElementById("m-label")?.value?.trim();
+  if(!pk)return alert("Private key required");
+  try{await POST("/wallets",{privateKey:pk,label});S.wallets=await GET("/wallets");closeModal();render();}
+  catch(e){alert(e.message);}
+}
+async function toggleWallet(id,active){await PATCH(`/wallets/${id}`,{active});S.wallets=await GET("/wallets");render();}
+async function delWallet(id){if(!confirm("Remove wallet?"))return;await DEL(`/wallets/${id}`);S.wallets=await GET("/wallets");render();}
+async function fetchBal(id){
+  try{const d=await GET(`/wallets/${id}/balance?chain=eth`);alert(`${d.balance} ${d.symbol} — ${d.address}`);}
+  catch(e){alert(e.message);}
+}
+async function createDrop(){
+  try{
+    await POST("/drops",{name:document.getElementById("d-name")?.value,chain:document.getElementById("d-chain")?.value,contractAddress:document.getElementById("d-addr")?.value,mintFunctionSig:document.getElementById("d-fn")?.value||"mint(uint256)",mintPrice:document.getElementById("d-price")?.value||"0",mintCopies:document.getElementById("d-copies")?.value||"1",maxGasGwei:document.getElementById("d-gas")?.value||"100",gasLimit:document.getElementById("d-limit")?.value||"250000",gasStrategy:document.getElementById("d-strat")?.value||"auto"});
+    S.drops=await GET("/drops");closeModal();render();
+  }catch(e){alert(e.message);}
+}
+async function saveDrop(id){
+  try{await PUT(`/drops/${id}`,{contractAddress:document.getElementById("ed-addr")?.value,mintPrice:document.getElementById("ed-price")?.value,mintCopies:document.getElementById("ed-copies")?.value,maxGasGwei:document.getElementById("ed-gas")?.value,gasLimit:document.getElementById("ed-limit")?.value});S.drops=await GET("/drops");closeModal();render();}
+  catch(e){alert(e.message);}
+}
+async function delDrop(id){if(!confirm("Delete drop?"))return;await DEL(`/drops/${id}`);S.drops=await GET("/drops");render();}
+async function createTask(){
+  try{
+    const t=document.getElementById("t-time")?.value;
+    await POST("/tasks",{dropId:document.getElementById("t-drop")?.value,name:document.getElementById("t-name")?.value||"Mint Task",scheduledAt:t||null});
+    S.tasks=await GET("/tasks");closeModal();render();
+  }catch(e){alert(e.message);}
+}
+async function fireTask(id){if(!confirm("Fire now?"))return;try{await POST(`/tasks/${id}/fire`);S.tasks=await GET("/tasks");S.runs=await GET("/runs?limit=30");nav("warroom");}catch(e){alert(e.message);}}
+async function cancelTask(id){await POST(`/tasks/${id}/cancel`);S.tasks=await GET("/tasks");render();}
+async function quickFire(dropId){if(!confirm("Fire this drop immediately?"))return;const t=await POST("/tasks",{dropId,name:"Quick Fire",scheduledAt:null});await POST(`/tasks/${t.id}/fire`);S.tasks=await GET("/tasks");S.runs=await GET("/runs?limit=30");nav("warroom");}
+async function loadLogs(){S.logs=await GET("/logs?limit=200");render();}
+function exportLogs(){const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([S.logs.map(l=>`[${l.time}] [${(l.type||'info').toUpperCase()}] ${l.msg}`).join("\n")],{type:"text/plain"}));a.download=`mintbot-logs-${Date.now()}.txt`;a.click();}
+async function saveSettings(){S.serverUrl=document.getElementById("s-url")?.value?.trim();S.apiKey=document.getElementById("s-key")?.value?.trim();localStorage.setItem("mb_url",S.serverUrl);localStorage.setItem("mb_key",S.apiKey);document.getElementById("serverUrl").value=S.serverUrl;document.getElementById("apiKey").value=S.apiKey;await connect();}
+async function saveRpcKey(){const k=document.getElementById("s-rpc")?.value?.trim();if(!k)return alert("Enter a key");try{await POST("/config/rpc",{rpcKey:k});alert("✅ RPC key saved!");}catch(e){alert(e.message);}}
+
+if(S.serverUrl&&S.apiKey)setTimeout(connect,300);
+</script>
+</body>
+</html>
