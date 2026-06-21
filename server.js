@@ -16,7 +16,12 @@ const app = express();
 const PORT = process.env.PORT || 3001;
 const API_SECRET = process.env.API_SECRET || "mintbot-secret";
 
-app.use(cors());
+app.use(cors({
+  origin: "*",
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "x-api-key"],
+}));
+app.options("*", cors());
 app.use(express.json());
 
 // ─── Auth middleware ──────────────────────────────────────────
