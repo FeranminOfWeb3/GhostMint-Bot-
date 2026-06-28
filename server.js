@@ -11,6 +11,7 @@ const {
   createTask, cancelTask, fireNow,
   triggerRBF, pollGas, gasCache,
 } = require("./jobQueue");
+const { startTracker, stopTracker, getTrackers, getTracker } = require("./walletTracker");
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -220,6 +221,34 @@ app.get("/overview", auth, (req, res) => {
   });
 });
 
+
+// ─── Wallet Trackers ──────────────────────────────────────────
+app.get("/trackers", auth, (req, res) => res.json(getTrackers()));
+
+app.get("/trackers/:id", auth, (req, res) => {
+  const t = getTracker(req.params.id);
+  if (!t) return res.status(404).json({ error: "Tracker not found" });
+  res.json(t);
+});
+
+app.post("/trackers", auth, async (req, res) => {
+  const { targetAddress, dropId, label, chain, contractAddress } = req.body;
+  if (!targetAddress) return res.status(400).json({ error: "targetAddress required" });
+  if (!dropId) return res.status(400).json({ error: "dropId required" });
+  try {
+    const id = uuidv4();
+    const tracker = await startTracker(id, targetAddress, dropId, label, chain, contractAddress);
+    res.json(tracker);
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+app.delete("/trackers/:id", auth, async (req, res) => {
+  await stopTracker(req.params.id);
+  res.json({ ok: true });
+});
+
 // ─── Start ────────────────────────────────────────────────────
 app.listen(PORT, () => {
   console.log(`\n🤖 MintBot Server running on port ${PORT}`);
@@ -227,3 +256,4 @@ app.listen(PORT, () => {
   console.log(`📡 Health: http://localhost:${PORT}/health\n`);
   log(`MintBot server started on port ${PORT}`, "success");
 });
+                              
