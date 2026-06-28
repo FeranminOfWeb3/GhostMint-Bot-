@@ -125,7 +125,9 @@ body{background:#030712;color:#E5E7EB;font-family:'Inter','Segoe UI',sans-serif;
 </div>
 <div id="mc"></div>
 <script>
-let S={page:"overview",trackers:[],serverUrl:localStorage.getItem("mb_url")||"http://localhost:3001",apiKey:localStorage.getItem("mb_key")||"",connected:false,overview:null,drops:[],tasks:[],wallets:[],runs:[],logs:[],pnl:null,countdownTimers:{},autoRefresh:null};
+// Clear bad localhost from storage
+if(localStorage.getItem("mb_url")==="http://localhost:3001")localStorage.removeItem("mb_url");
+let S={page:"overview",trackers:[],serverUrl:localStorage.getItem("mb_url")||"",apiKey:localStorage.getItem("mb_key")||"",connected:false,overview:null,drops:[],tasks:[],wallets:[],runs:[],logs:[],pnl:null,countdownTimers:{},autoRefresh:null};
 document.getElementById("serverUrl").value=S.serverUrl;
 document.getElementById("apiKey").value=S.apiKey;
 
@@ -246,4 +248,4 @@ function renderTasks(){
 function renderWarRoom(){
   const active=S.runs.filter(r=>r.status==="running");
   const logLines=S.logs.slice(0,80).map(l=>`<div class="log-line"><span class="log-time">[${new Date(l.time).toLocaleTimeString()}]</span><span class="l-${l.type||'info'}">${l.msg}</span></div>`).join("")||`<div style="color:#4B5563;font-size:13px">No activity.</div>`;
-  const activeHtml=active.length?active.map(r=>`<div class="card" style="border-color:#10B98133"><div class="row"><b>${r.dropName}</b>${badge("running")}</div><div style="font-size:12px;color:#6B7280;margin-top:6px">Started ${timeAgo(r.startedAt)}</div><div style="margin-top:10px">${
+  const activeHtml=active.length?active.map(r=>`<div class="card" style="border-color:#10B98133"><div class="row"><b>${r.dropName}</b>${badge("running")}</div><div style="fon
