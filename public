@@ -1,0 +1,7 @@
+ghostmint-bot/
+├── index.js
+├── package.json
+├── railway.json
+├── .gitignore
+└── public/
+    └── index.html
